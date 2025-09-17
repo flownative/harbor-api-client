@@ -29,5 +29,6 @@ return [
         ['^\/projects/\{project_name_or_id\}/robots$', ['GET', 'POST']],
         ['^\/projects/\{project_name_or_id\}/robots/\{robot_id\}$', ['GET', 'PUT', 'DELETE']],
         ['^\/repositories$', ['HEAD', 'GET', 'POST']],
+        ['^\/projects/\{project_name\}/repositories/\{repository_name\}/artifacts.*$', ['GET', 'PUT', 'POST', 'DELETE']],
     ]
 ];
