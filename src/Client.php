@@ -572,6 +572,471 @@ class Client extends Runtime\Client\Client
     }
 
     /**
+     * List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "tags=v" to list artifact whose tag exactly matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to.
+     *
+     * @param string $projectName     The name of the project
+     * @param string $repositoryName  The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param array  $queryParameters {
+     *
+     * @var string $q Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+     * @var string $sort Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2"
+     * @var int    $page The page number
+     * @var int    $page_size The size of per page
+     * @var bool   $with_tag Specify whether the tags are included inside the returning artifacts
+     * @var bool   $with_label Specify whether the labels are included inside the returning artifacts
+     * @var bool   $with_scan_overview Specify whether the scan overview is included inside the returning artifacts
+     * @var bool   $with_signature Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+     * @var bool   $with_immutable_status Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
+     * @var bool   $with_accessory Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+     *             }
+     *
+     * @param array $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     * @var string $X-Accept-Vulnerabilities A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
+     *             Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return Model\Artifact[]|\Psr\Http\Message\ResponseInterface
+     *
+     * @throws Exception\ListArtifactsBadRequestException
+     * @throws Exception\ListArtifactsUnauthorizedException
+     * @throws Exception\ListArtifactsForbiddenException
+     * @throws Exception\ListArtifactsNotFoundException
+     * @throws Exception\ListArtifactsInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function listArtifacts(string $projectName, string $repositoryName, array $queryParameters = [], array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\ListArtifacts($projectName, $repositoryName, $queryParameters, $headerParameters), $fetch);
+    }
+
+    /**
+     * Copy the artifact specified in the "from" parameter to the repository.
+     *
+     * @param string $projectName     The name of the project
+     * @param string $repositoryName  The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param array  $queryParameters {
+     *
+     * @var string $from The artifact from which the new artifact is copied from, the format should be "project/repository:tag" or "project/repository@digest".
+     *             }
+     *
+     * @param array $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\CopyArtifactBadRequestException
+     * @throws Exception\CopyArtifactUnauthorizedException
+     * @throws Exception\CopyArtifactForbiddenException
+     * @throws Exception\CopyArtifactNotFoundException
+     * @throws Exception\CopyArtifactMethodNotAllowedException
+     * @throws Exception\CopyArtifactInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function copyArtifact(string $projectName, string $repositoryName, array $queryParameters = [], array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\CopyArtifact($projectName, $repositoryName, $queryParameters, $headerParameters), $fetch);
+    }
+
+    /**
+     * Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\DeleteArtifactUnauthorizedException
+     * @throws Exception\DeleteArtifactForbiddenException
+     * @throws Exception\DeleteArtifactNotFoundException
+     * @throws Exception\DeleteArtifactInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function deleteArtifact(string $projectName, string $repositoryName, string $reference, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\DeleteArtifact($projectName, $repositoryName, $reference, $headerParameters), $fetch);
+    }
+
+    /**
+     * Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+     *
+     * @param string $projectName     The name of the project
+     * @param string $repositoryName  The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference       The reference of the artifact, can be digest or tag
+     * @param array  $queryParameters {
+     *
+     * @var int  $page The page number
+     * @var int  $page_size The size of per page
+     * @var bool $with_tag Specify whether the tags are inclued inside the returning artifacts
+     * @var bool $with_label Specify whether the labels are inclued inside the returning artifacts
+     * @var bool $with_scan_overview Specify whether the scan overview is inclued inside the returning artifacts
+     * @var bool $with_accessory specify whether the accessories are included of the returning artifacts
+     * @var bool $with_signature Specify whether the signature is inclued inside the returning artifacts
+     * @var bool $with_immutable_status Specify whether the immutable status is inclued inside the tags of the returning artifacts.
+     *           }
+     *
+     * @param array $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     * @var string $X-Accept-Vulnerabilities A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
+     *             Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return Model\Artifact|\Psr\Http\Message\ResponseInterface
+     *
+     * @throws Exception\GetArtifactBadRequestException
+     * @throws Exception\GetArtifactUnauthorizedException
+     * @throws Exception\GetArtifactForbiddenException
+     * @throws Exception\GetArtifactNotFoundException
+     * @throws Exception\GetArtifactInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function getArtifact(string $projectName, string $repositoryName, string $reference, array $queryParameters = [], array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\GetArtifact($projectName, $repositoryName, $reference, $queryParameters, $headerParameters), $fetch);
+    }
+
+    /**
+     * Scan the specified artifact.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\ScanArtifactBadRequestException
+     * @throws Exception\ScanArtifactUnauthorizedException
+     * @throws Exception\ScanArtifactForbiddenException
+     * @throws Exception\ScanArtifactNotFoundException
+     * @throws Exception\ScanArtifactInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function scanArtifact(string $projectName, string $repositoryName, string $reference, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\ScanArtifact($projectName, $repositoryName, $reference, $headerParameters), $fetch);
+    }
+
+    /**
+     * Cancelling a scan job for a particular artifact.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\StopScanArtifactBadRequestException
+     * @throws Exception\StopScanArtifactUnauthorizedException
+     * @throws Exception\StopScanArtifactForbiddenException
+     * @throws Exception\StopScanArtifactNotFoundException
+     * @throws Exception\StopScanArtifactInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function stopScanArtifact(string $projectName, string $repositoryName, string $reference, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\StopScanArtifact($projectName, $repositoryName, $reference, $headerParameters), $fetch);
+    }
+
+    /**
+     * Get the log of the scan report.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param string $reportId         The report id to get the log
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\GetReportLogUnauthorizedException
+     * @throws Exception\GetReportLogForbiddenException
+     * @throws Exception\GetReportLogNotFoundException
+     * @throws Exception\GetReportLogInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function getReportLog(string $projectName, string $repositoryName, string $reference, string $reportId, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\GetReportLog($projectName, $repositoryName, $reference, $reportId, $headerParameters), $fetch);
+    }
+
+    /**
+     * List tags of the specific artifact.
+     *
+     * @param string $projectName     The name of the project
+     * @param string $repositoryName  The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference       The reference of the artifact, can be digest or tag
+     * @param array  $queryParameters {
+     *
+     * @var string $q Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+     * @var string $sort Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2"
+     * @var int    $page The page number
+     * @var int    $page_size The size of per page
+     * @var bool   $with_signature Specify whether the signature is included inside the returning tags
+     * @var bool   $with_immutable_status Specify whether the immutable status is included inside the returning tags
+     *             }
+     *
+     * @param array $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return Model\Tag[]|\Psr\Http\Message\ResponseInterface
+     *
+     * @throws Exception\ListTagsBadRequestException
+     * @throws Exception\ListTagsUnauthorizedException
+     * @throws Exception\ListTagsForbiddenException
+     * @throws Exception\ListTagsNotFoundException
+     * @throws Exception\ListTagsInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function listTags(string $projectName, string $repositoryName, string $reference, array $queryParameters = [], array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\ListTags($projectName, $repositoryName, $reference, $queryParameters, $headerParameters), $fetch);
+    }
+
+    /**
+     * Create a tag for the specified artifact.
+     *
+     * @param string    $projectName      The name of the project
+     * @param string    $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string    $reference        The reference of the artifact, can be digest or tag
+     * @param Model\Tag $tag              the JSON object of tag
+     * @param array     $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\CreateTagBadRequestException
+     * @throws Exception\CreateTagUnauthorizedException
+     * @throws Exception\CreateTagForbiddenException
+     * @throws Exception\CreateTagNotFoundException
+     * @throws Exception\CreateTagMethodNotAllowedException
+     * @throws Exception\CreateTagConflictException
+     * @throws Exception\CreateTagInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function createTag(string $projectName, string $repositoryName, string $reference, Model\Tag $tag, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\CreateTag($projectName, $repositoryName, $reference, $tag, $headerParameters), $fetch);
+    }
+
+    /**
+     * Delete the tag of the specified artifact.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param string $tagName          The name of the tag
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\DeleteTagUnauthorizedException
+     * @throws Exception\DeleteTagForbiddenException
+     * @throws Exception\DeleteTagNotFoundException
+     * @throws Exception\DeleteTagInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function deleteTag(string $projectName, string $repositoryName, string $reference, string $tagName, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\DeleteTag($projectName, $repositoryName, $reference, $tagName, $headerParameters), $fetch);
+    }
+
+    /**
+     * List accessories of the specific artifact.
+     *
+     * @param string $projectName     The name of the project
+     * @param string $repositoryName  The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference       The reference of the artifact, can be digest or tag
+     * @param array  $queryParameters {
+     *
+     * @var string $q Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+     * @var string $sort Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2"
+     * @var int    $page The page number
+     * @var int    $page_size The size of per page
+     *             }
+     *
+     * @param array $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return Model\Accessory[]|\Psr\Http\Message\ResponseInterface
+     *
+     * @throws Exception\ListAccessoriesBadRequestException
+     * @throws Exception\ListAccessoriesUnauthorizedException
+     * @throws Exception\ListAccessoriesForbiddenException
+     * @throws Exception\ListAccessoriesNotFoundException
+     * @throws Exception\ListAccessoriesInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function listAccessories(string $projectName, string $repositoryName, string $reference, array $queryParameters = [], array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\ListAccessories($projectName, $repositoryName, $reference, $queryParameters, $headerParameters), $fetch);
+    }
+
+    /**
+     * Get the vulnerabilities addition of the artifact specified by the reference under the project and repository.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     * @var string $X-Accept-Vulnerabilities A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
+     *             Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\GetVulnerabilitiesAdditionBadRequestException
+     * @throws Exception\GetVulnerabilitiesAdditionUnauthorizedException
+     * @throws Exception\GetVulnerabilitiesAdditionForbiddenException
+     * @throws Exception\GetVulnerabilitiesAdditionNotFoundException
+     * @throws Exception\GetVulnerabilitiesAdditionInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function getVulnerabilitiesAddition(string $projectName, string $repositoryName, string $reference, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\GetVulnerabilitiesAddition($projectName, $repositoryName, $reference, $headerParameters), $fetch);
+    }
+
+    /**
+     * Get the addition of the artifact specified by the reference under the project and repository.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param string $addition         the type of addition
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\GetAdditionBadRequestException
+     * @throws Exception\GetAdditionUnauthorizedException
+     * @throws Exception\GetAdditionForbiddenException
+     * @throws Exception\GetAdditionNotFoundException
+     * @throws Exception\GetAdditionInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function getAddition(string $projectName, string $repositoryName, string $reference, string $addition, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\GetAddition($projectName, $repositoryName, $reference, $addition, $headerParameters), $fetch);
+    }
+
+    /**
+     * Add label to the specified artiact.
+     *
+     * @param string      $projectName      The name of the project
+     * @param string      $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string      $reference        The reference of the artifact, can be digest or tag
+     * @param Model\Label $label            The label that added to the artifact. Only the ID property is needed.
+     * @param array       $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\AddLabelBadRequestException
+     * @throws Exception\AddLabelUnauthorizedException
+     * @throws Exception\AddLabelForbiddenException
+     * @throws Exception\AddLabelNotFoundException
+     * @throws Exception\AddLabelConflictException
+     * @throws Exception\AddLabelInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function addLabel(string $projectName, string $repositoryName, string $reference, Model\Label $label, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\AddLabel($projectName, $repositoryName, $reference, $label, $headerParameters), $fetch);
+    }
+
+    /**
+     * Remove the label from the specified artiact.
+     *
+     * @param string $projectName      The name of the project
+     * @param string $repositoryName   The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
+     * @param string $reference        The reference of the artifact, can be digest or tag
+     * @param int    $labelId          the ID of the label that removed from the artifact
+     * @param array  $headerParameters {
+     *
+     * @var string $X-Request-Id An unique ID for the request
+     *             }
+     *
+     * @param string $fetch Fetch mode to use (can be OBJECT or RESPONSE)
+     *
+     * @return \Psr\Http\Message\ResponseInterface|null
+     *
+     * @throws Exception\RemoveLabelUnauthorizedException
+     * @throws Exception\RemoveLabelForbiddenException
+     * @throws Exception\RemoveLabelNotFoundException
+     * @throws Exception\RemoveLabelConflictException
+     * @throws Exception\RemoveLabelInternalServerErrorException
+     * @throws Exception\UnexpectedStatusCodeException
+     */
+    public function removeLabel(string $projectName, string $repositoryName, string $reference, int $labelId, array $headerParameters = [], string $fetch = self::FETCH_OBJECT)
+    {
+        return $this->executeEndpoint(new Endpoint\RemoveLabel($projectName, $repositoryName, $reference, $labelId, $headerParameters), $fetch);
+    }
+
+    /**
      * Get all robot accounts of specified project.
      *
      * @param string $projectNameOrId The name or id of the project

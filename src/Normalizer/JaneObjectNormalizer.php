@@ -32,6 +32,24 @@ class JaneObjectNormalizer implements DenormalizerInterface, NormalizerInterface
 
         \Flownative\Harbor\Api\Model\Repository::class => RepositoryNormalizer::class,
 
+        \Flownative\Harbor\Api\Model\Artifact::class => ArtifactNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Tag::class => TagNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\AdditionLink::class => AdditionLinkNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Reference::class => ReferenceNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Platform::class => PlatformNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Label::class => LabelNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Scanner::class => ScannerNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\NativeReportSummary::class => NativeReportSummaryNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\VulnerabilitySummary::class => VulnerabilitySummaryNormalizer::class,
+
         \Flownative\Harbor\Api\Model\ProjectReq::class => ProjectReqNormalizer::class,
 
         \Flownative\Harbor\Api\Model\Project::class => ProjectNormalizer::class,
@@ -79,6 +97,8 @@ class JaneObjectNormalizer implements DenormalizerInterface, NormalizerInterface
         \Flownative\Harbor\Api\Model\ComponentHealthStatus::class => ComponentHealthStatusNormalizer::class,
 
         \Flownative\Harbor\Api\Model\Statistic::class => StatisticNormalizer::class,
+
+        \Flownative\Harbor\Api\Model\Accessory::class => AccessoryNormalizer::class,
 
         \Jane\Component\JsonSchemaRuntime\Reference::class => \Flownative\Harbor\Api\Runtime\Normalizer\ReferenceNormalizer::class,
     ];
@@ -131,6 +151,15 @@ class JaneObjectNormalizer implements DenormalizerInterface, NormalizerInterface
             \Flownative\Harbor\Api\Model\Errors::class => false,
             \Flownative\Harbor\Api\Model\Error::class => false,
             \Flownative\Harbor\Api\Model\Repository::class => false,
+            \Flownative\Harbor\Api\Model\Artifact::class => false,
+            \Flownative\Harbor\Api\Model\Tag::class => false,
+            \Flownative\Harbor\Api\Model\AdditionLink::class => false,
+            \Flownative\Harbor\Api\Model\Reference::class => false,
+            \Flownative\Harbor\Api\Model\Platform::class => false,
+            \Flownative\Harbor\Api\Model\Label::class => false,
+            \Flownative\Harbor\Api\Model\Scanner::class => false,
+            \Flownative\Harbor\Api\Model\NativeReportSummary::class => false,
+            \Flownative\Harbor\Api\Model\VulnerabilitySummary::class => false,
             \Flownative\Harbor\Api\Model\ProjectReq::class => false,
             \Flownative\Harbor\Api\Model\Project::class => false,
             \Flownative\Harbor\Api\Model\ProjectMetadata::class => false,
@@ -155,6 +184,7 @@ class JaneObjectNormalizer implements DenormalizerInterface, NormalizerInterface
             \Flownative\Harbor\Api\Model\OverallHealthStatus::class => false,
             \Flownative\Harbor\Api\Model\ComponentHealthStatus::class => false,
             \Flownative\Harbor\Api\Model\Statistic::class => false,
+            \Flownative\Harbor\Api\Model\Accessory::class => false,
             \Jane\Component\JsonSchemaRuntime\Reference::class => false,
         ];
     }
